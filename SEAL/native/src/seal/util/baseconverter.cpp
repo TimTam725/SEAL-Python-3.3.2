@@ -147,22 +147,22 @@ namespace seal
 
             // Generate punctured products of coeff moduli
             coeff_products_array_ = allocate_zero_uint(
-                coeff_products_uint64_count * coeff_base_mod_count_, pool_);
+                coeff_products_uint64_count * coeff_base_mod_count_, pool_);//4 * 4
             auto tmp_coeff(allocate_uint(coeff_products_uint64_count, pool_));
 
-            for (size_t i = 0; i < coeff_base_mod_count_; i++)
+            for (size_t i = 0; i < coeff_base_mod_count_; i++)//4
             {
                 coeff_products_array_[i * coeff_products_uint64_count] = 1;
                 for (size_t j = 0; j < coeff_base_mod_count_; j++)
                 {
                     if (i != j)
                     {
-                        multiply_uint_uint64(coeff_products_array_.get() +
+                        multiply_uint_uint64(coeff_products_array_.get() +//i != jの時の素数をかける
                             (i * coeff_products_uint64_count), coeff_products_uint64_count,
                             coeff_base_array_[j].value(), coeff_products_uint64_count,
                             tmp_coeff.get());
                         set_uint_uint(tmp_coeff.get(), coeff_products_uint64_count,
-                            coeff_products_array_.get() + (i * coeff_products_uint64_count));
+                            coeff_products_array_.get() + (i * coeff_products_uint64_count));//coeff_products_arrayに入れてる
                     }
                 }
             }
@@ -198,7 +198,7 @@ namespace seal
                         aux_products_uint64_count, m_sk_, pool_);
             }
 
-            // Compute inverse coeff base mod coeff base array (qi^(-1)) mod qi and
+            // Compute inverse coeff base mod coeff base array (qi^(-1)) mod qi and //qi^(-1) = q1*q2*q3?
             // mtilde inv coeff products mod auxiliary moduli  (m_tilda*qi^(-1)) mod qi
             inv_coeff_base_products_mod_coeff_array_ =
                 allocate_uint(coeff_base_mod_count_, pool_);

@@ -1152,12 +1152,12 @@ namespace seal
         }
 
         // Calculate number of relinearize_one_step calls needed
-        size_t relins_needed = encrypted_size - destination_size;
+        size_t relins_needed = encrypted_size - destination_size;//3 -2
         for (size_t i = 0; i < relins_needed; i++)
         {
             switch_key_inplace(
                 encrypted,
-                encrypted.data(encrypted_size - 1),
+                encrypted.data(encrypted_size - 1),//3つめの要素を入れる
                 static_cast<const KSwitchKeys &>(relin_keys),
                 RelinKeys::get_index(encrypted_size - 1),
                 pool);
@@ -2724,7 +2724,7 @@ namespace seal
                     }
 
                     // Lazy reduction, output in [0, 4q).
-                    ntt_negacyclic_harvey_lazy(
+                    ntt_negacyclic_harvey_lazy(//もしかしてmod up? ->違う遅延削減：一定時間で法をとる
                         local_small_poly_1.get(),
                         small_ntt_tables[index]);
                     local_encrypted_ptr = local_small_poly_1.get();
@@ -2744,7 +2744,7 @@ namespace seal
                     //     coeff_count,
                     //     key_modulus[index],
                     //     temp_poly[k].get() + j * coeff_count);
-                    const uint64_t *key_ptr = key_vector[i].data().data(k);
+                    const uint64_t *key_ptr = key_vector[i].data().data(k);//鍵も素数分だけもってないといけない
                     for (size_t l = 0; l < coeff_count; l++)
                     {
                         unsigned long long local_wide_product[2];
@@ -2768,7 +2768,7 @@ namespace seal
             }
         }
 
-        // Results are now stored in temp_poly[k]
+        // Results are now stored in temp_poly[k] -> 8192 * 2 要素数 * 4配列 * 2鍵
         // Modulus switching should be performed
         auto local_small_poly(allocate_uint(coeff_count, pool));
         for (size_t k = 0; k < 2; k++)
@@ -2796,7 +2796,7 @@ namespace seal
                     key_modulus[key_mod_count - 1]);
             }
 
-            uint64_t *encrypted_ptr = encrypted.data(k);
+            uint64_t *encrypted_ptr = encrypted.data(k);//第一引数
             for (size_t j = 0; j < decomp_mod_count; j++)
             {
                 temp_poly_ptr = temp_poly[k].get() + j * coeff_count * 2;
@@ -2833,13 +2833,13 @@ namespace seal
                     inverse_ntt_negacyclic_harvey(
                         temp_poly_ptr,
                         small_ntt_tables[j]);
-                }
-                // ((ct mod qi) - (ct mod qk)) mod qi
+                }//qk = p_0な気がする
+                // ((ct mod qi) - (ct mod qk)) mod qi :::qkが定数ならつじつまが合う，ただし，moduloは全ての素数に対してとる？
                 sub_poly_poly_coeffmod(
                     temp_poly_ptr,
                     local_small_poly.get(),
                     coeff_count,
-                    key_modulus[j],
+                    key_modulus[j],// = qi
                     temp_poly_ptr);
                 // qk^(-1) * ((ct mod qi) - (ct mod qk)) mod qi
                 multiply_poly_scalar_coeffmod(
@@ -2848,7 +2848,7 @@ namespace seal
                     modswitch_factors[j],
                     key_modulus[j],
                     temp_poly_ptr);
-                add_poly_poly_coeffmod(
+                add_poly_poly_coeffmod(// 5.output ct
                     temp_poly_ptr,
                     encrypted_ptr + j * coeff_count,
                     coeff_count,

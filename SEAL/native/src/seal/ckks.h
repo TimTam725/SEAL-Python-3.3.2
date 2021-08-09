@@ -556,13 +556,34 @@ namespace seal
                     }
                 }
             }
+            // std::cout << "hello world" << std::endl;
+            // for (std::size_t i = 0; i < coeff_mod_count; i++){
+            //   if(i == 3){
+            //     // std::cout << "--------------------- coeff_mod_count "<<i<<"-----------------------"<< std::endl;
+            //     for (std::size_t j = 0; j < coeff_count; j++){
+            //         std::cout << destination.data(i * coeff_count)[j] << std::endl;
+            //     }
+            //   }
+            // }
 
             // Transform to NTT domain
+            // std::cout << "encode NTT" << std::endl;
             for (std::size_t i = 0; i < coeff_mod_count; i++)
             {
+                std::cout << "--------------------- coeff_mod_count "<<i<<"-----------------------"<< std::endl;
                 util::ntt_negacyclic_harvey(
                     destination.data(i * coeff_count), small_ntt_tables[i]);
+
+                // std::cout << coeff_modulus[i].value_ << std::endl;
             }
+            // for (std::size_t i = 0; i < coeff_mod_count; i++){
+            //   if(i == 2){
+            //     // std::cout << "--------------------- coeff_mod_count "<<i<<"-----------------------"<< std::endl;
+            //     for (std::size_t j = 0; j < coeff_count; j++){
+            //       std::cout << destination.data(i * coeff_count)[j] << std::endl;
+            //     }
+            //   }
+            // }
 
             destination.parms_id() = parms_id;
             destination.scale() = scale;
@@ -610,7 +631,7 @@ namespace seal
 
             auto &inv_coeff_products_mod_coeff_array =
                 context_data_ptr->base_converter()->get_inv_coeff_mod_coeff_array();
-            auto coeff_products_array =
+            auto coeff_products_array =//qi以外のqjの積
                 context_data_ptr->base_converter()->get_coeff_products_array();
 
             int logn = util::get_power_of_two(coeff_count);
@@ -632,14 +653,21 @@ namespace seal
             auto temp(util::allocate_uint(coeff_mod_count, pool));
 
             // destination mod q
-            auto wide_tmp_dest(util::allocate_zero_uint(rns_poly_uint64_count, pool));
+            auto wide_tmp_dest(util::allocate_zero_uint(rns_poly_uint64_count, pool));//2 ^ 12 * 6
 
             // Transform each polynomial from NTT domain
+            // for (std::size_t i = 0; i < coeff_mod_count; i++){
+            //   std::cout << "--------------------- coeff_mod_count "<<i<<"-----------------------"<< std::endl;
+            //   for (std::size_t j = 0; j < coeff_count; j++){
+            //     std::cout << plain_copy[(i * coeff_count) + j] << std::endl;
+            //   }
+            // }
             for (std::size_t i = 0; i < coeff_mod_count; i++)
             {
                 util::inverse_ntt_negacyclic_harvey(
                     plain_copy.get() + (i * coeff_count), small_ntt_tables[i]);
             }
+            // std::cout << "-------------decode out ----------------" << std::endl;
 
             auto res = util::allocate<std::complex<double>>(coeff_count, pool);
 
@@ -650,15 +678,15 @@ namespace seal
                 {
                     std::uint64_t tmp = util::multiply_uint_uint_mod(
                         plain_copy[(j * coeff_count) + i],
-                        inv_coeff_products_mod_coeff_array[j], // (qi/q * plain[i]) mod qi
+                        inv_coeff_products_mod_coeff_array[j], // (qi/q * plain[i]) mod qi ::::->qi/qって何だ？qi : 3つの素数, q = 合成？
                         coeff_modulus[j]);
-                    util::multiply_uint_uint64(
+                    util::multiply_uint_uint64(//tmp * coeff_products_array = temp.get()
                         coeff_products_array + (j * coeff_mod_count),
                         coeff_mod_count, tmp, coeff_mod_count, temp.get());
-                    util::add_uint_uint_mod(temp.get(),
+                    util::add_uint_uint_mod(temp.get(),//wide_tmp <- temp.get() + wide_tmp_dest mod decryption_modulus(q ?)
                         wide_tmp_dest.get() + (i * coeff_mod_count),
                         decryption_modulus, coeff_mod_count,
-                        wide_tmp_dest.get() + (i * coeff_mod_count));
+                        wide_tmp_dest.get() + (i * coeff_mod_count));//uint64 * 3だけ確保
                 }
 
                 res[i] = 0.0;
@@ -703,7 +731,7 @@ namespace seal
             }
 
             std::size_t tt = coeff_count;
-            for (int i = 0; i < logn; i++)
+            for (int i = 0; i < logn; i++)//decodeの行列演算
             {
                 std::size_t mm = std::size_t(1) << i;
                 tt >>= 1;

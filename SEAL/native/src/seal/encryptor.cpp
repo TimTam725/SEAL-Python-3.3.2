@@ -36,6 +36,7 @@ namespace seal
         {
             throw invalid_argument("public key is not valid for encryption parameters");
         }
+        cout << "hello" << endl;
 
         auto &parms = context_->key_context_data()->parms();
         auto &coeff_modulus = parms.coeff_modulus();

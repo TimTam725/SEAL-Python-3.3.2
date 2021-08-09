@@ -91,6 +91,10 @@ namespace seal
             ntt_powers_of_primitive_root(root_, root_powers_.get());
             ntt_scale_powers_of_primitive_root(root_powers_.get(),
                 scaled_root_powers_.get());
+            // std::cout << "--------------- coeff modulus ----------------" << std::endl;
+            // for(int i = 0; i < coeff_count_; i++){
+            //   std::cout << scaled_root_powers_.get()[i] << std::endl;
+            // }
 
             // Populate the tables storing (scaled version of) powers of
             // (root)^{-1} mod q in bit-scrambled order.
@@ -162,8 +166,10 @@ namespace seal
         void ntt_negacyclic_harvey_lazy(uint64_t *operand,
             const SmallNTTTables &tables)
         {
+          // cout << "\nsmallntt.cpp ntt_negacyclic_harvey_lazy ----------------------" << endl;
             uint64_t modulus = tables.modulus().value();
             uint64_t two_times_modulus = modulus * 2;
+            // std::cout << modulus << std::endl;
 
             // Return the NTT in scrambled order
             size_t n = size_t(1) << tables.coeff_count_power();
@@ -174,10 +180,18 @@ namespace seal
                 {
                     for (size_t i = 0; i < m; i++)
                     {
+                      // cout << "for Loop i = " << i << " ,  m = " << m << endl;
                         size_t j1 = 2 * i * t;
                         size_t j2 = j1 + t;
                         const uint64_t W = tables.get_from_root_powers(m + i);
                         const uint64_t Wprime = tables.get_from_scaled_root_powers(m + i);
+
+                        // cout << Wprime << "," << endl;
+                        //
+                        // cout << "j1 = 2 * i * t = " << j1 << " = 2 * " << i << " * " << t << endl;
+                        // cout << "j2 = j1 + t = " << j2 << " = " << j1 << " + " << t << endl;
+                        // cout << "W = " << W << " ,  m = " << m << " ,  i = " << i << " ,  m+i = " << m+i << endl;
+                        // cout << "Wprime = " << Wprime << " ,  m+i = " << m+i <<endl;
 
                         uint64_t *X = operand + j1;
                         uint64_t *Y = X + t;
@@ -185,29 +199,34 @@ namespace seal
                         unsigned long long Q;
                         for (size_t j = j1; j < j2; j += 4)
                         {
+                          // cout << "for Loop j = " << j << " ,  j2 = " << j2 << endl;
                             currX = *X - (two_times_modulus & static_cast<uint64_t>(-static_cast<int64_t>(*X >= two_times_modulus)));
                             multiply_uint64_hw64(Wprime, *Y, &Q);
                             Q = *Y * W - Q * modulus;
                             *X++ = currX + Q;
                             *Y++ = currX + (two_times_modulus - Q);
+                            // cout << "Addr++ X_addr = 0x" << X << " ,  Y_addr = 0x" << Y << " -----" << endl;
 
                             currX = *X - (two_times_modulus & static_cast<uint64_t>(-static_cast<int64_t>(*X >= two_times_modulus)));
                             multiply_uint64_hw64(Wprime, *Y, &Q);
                             Q = *Y * W - Q * modulus;
                             *X++ = currX + Q;
                             *Y++ = currX + (two_times_modulus - Q);
+                            // cout << "Addr++ X_addr = 0x" << X << " ,  Y_addr = 0x" << Y << " -----" << endl;
 
                             currX = *X - (two_times_modulus & static_cast<uint64_t>(-static_cast<int64_t>(*X >= two_times_modulus)));
                             multiply_uint64_hw64(Wprime, *Y, &Q);
                             Q = *Y * W - Q * modulus;
                             *X++ = currX + Q;
                             *Y++ = currX + (two_times_modulus - Q);
+                            // cout << "Addr++ X_addr = 0x" << X << " ,  Y_addr = 0x" << Y << " -----" << endl;
 
                             currX = *X - (two_times_modulus & static_cast<uint64_t>(-static_cast<int64_t>(*X >= two_times_modulus)));
                             multiply_uint64_hw64(Wprime, *Y, &Q);
                             Q = *Y * W - Q * modulus;
                             *X++ = currX + Q;
                             *Y++ = currX + (two_times_modulus - Q);
+                            // cout << "Addr++ X_addr = 0x" << X << " ,  Y_addr = 0x" << Y << " -----" << endl;
                         }
                     }
                 }
@@ -238,6 +257,7 @@ namespace seal
                 }
                 t >>= 1;
             }
+            // cout << "------------------------------------- ntt_negacyclic_harvey_lazy END\n" << endl;
         }
 
         // Inverse negacyclic NTT using Harvey's butterfly. (See Patrick Longa and Michael Naehrig).

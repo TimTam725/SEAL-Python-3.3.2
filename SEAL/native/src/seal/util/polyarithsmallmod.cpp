@@ -426,8 +426,8 @@ namespace seal
             //    *result++ = multiply_uint_uint_mod(*operand1++, *operand2++, modulus);
             //}
             const uint64_t modulus_value = modulus.value();
-            const uint64_t const_ratio_0 = modulus.const_ratio()[0];
-            const uint64_t const_ratio_1 = modulus.const_ratio()[1];
+            const uint64_t const_ratio_0 = modulus.const_ratio()[0];//0x17fff00
+            const uint64_t const_ratio_1 = modulus.const_ratio()[1];//0x10
             for (; coeff_count--; operand1++, operand2++, result++)
             {
                 // Reduces z using base 2^64 Barrett reduction

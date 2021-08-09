@@ -43,7 +43,7 @@ namespace seal
         }
 
         bool try_primitive_root(uint64_t degree, const SmallModulus &modulus,
-            uint64_t &destination)
+            uint64_t &destination)//degree = 8192 * 2
         {
 #ifdef SEAL_DEBUG
             if (modulus.bit_count() < 2)

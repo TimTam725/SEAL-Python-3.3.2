@@ -287,7 +287,7 @@ namespace seal
                 // Lazy reduction
                 //ntt_negacyclic_harvey_lazy(copy_operand1.get(), small_ntt_tables[i]);
                 dyadic_product_coeffmod(copy_operand1.get(), current_array2, coeff_count,
-                    coeff_modulus[i], copy_operand1.get());
+                    coeff_modulus[i], copy_operand1.get());// c[1]・s
                 add_poly_poly_coeffmod(destination.data() + (i * coeff_count),
                     copy_operand1.get(), coeff_count, coeff_modulus[i],
                     destination.data() + (i * coeff_count));
@@ -300,7 +300,7 @@ namespace seal
             // add c_0 into destination
             add_poly_poly_coeffmod(destination.data() + (i * coeff_count),
                 encrypted.data() + (i * coeff_count), coeff_count,
-                coeff_modulus[i], destination.data() + (i * coeff_count));
+                coeff_modulus[i], destination.data() + (i * coeff_count));//c[0] + c[1]・s
         }
 
         // Set destination parameters as in encrypted

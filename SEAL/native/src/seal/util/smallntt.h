@@ -242,6 +242,7 @@ namespace seal
 
             for (; n--; operand++)
             {
+                std::cout << *operand << std::endl;
                 if (*operand >= two_times_modulus)
                 {
                     *operand -= two_times_modulus;
